@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++2a
+CXXFLAGS = -Wall -Wextra -std=c++20
 
 # Get all .cpp files
 SRCS = $(wildcard *.cpp)
@@ -17,12 +17,10 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-%.o: %.cpp %.d %.hpp
+%.o: %.cpp %.d %.h
 	$(CXX) -MT $@ -MMD -MP -MF $*.d $(CFLAGS) -c $(OUTPUT_OPTION) $<
 $(DEPS):
 include $(wildcard $(DEPS))
-# %.o: %.cpp
-# 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 runtcp: all
 	./$(TARGET) -h 0.0.0.0 -p 2023 -m tcp
