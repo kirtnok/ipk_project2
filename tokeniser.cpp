@@ -27,7 +27,7 @@ Token Tokeniser::get_token(int &i){
     }
     else{
         std::cout << "Error" << std::endl;
-        exit(1);
+        throw 1;
     }
     i++;
     return token;

@@ -8,6 +8,7 @@
 
 #include "tokeniser.h"
 #include "parser.h"
+#include "udpconnection.h"
 
 
 void print_help(){
@@ -67,6 +68,10 @@ int main(int argc, char *argv[]){
                 std::cout << "Use --help for help" << std::endl;
                 exit(1);
         }
+    }
+    if (udp_mode == true){
+        UDPConnection connection((char*)host,port);
+        connection.listen();
     }
     std::string input_string;
     std::getline(std::cin, input_string);

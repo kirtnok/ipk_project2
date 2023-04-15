@@ -55,6 +55,9 @@ void Parser::parse(){
         printf("SYNTAX ERROR");
         return;
     }
+    if (result < 0) {
+        throw 1;
+    }
     std::cout << "Result: " << this->result << std::endl;
 }
 
@@ -172,6 +175,9 @@ void Parser::execute(std::stack<Token> &stack){
             break;
         case '/':
             for (int i = 0; i < size-1; i++) {
+                if (stack2.top() == 0) {
+                    throw 1;
+                }
                 result /= stack2.top();
                 stack2.pop();
             }
