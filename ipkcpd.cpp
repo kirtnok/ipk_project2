@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "tcpconnection.h"
 #include "tokeniser.h"
 #include "parser.h"
 #include "udpconnection.h"
@@ -71,7 +72,13 @@ int main(int argc, char *argv[]){
     }
     if (udp_mode == true){
         UDPConnection connection((char*)host,port);
+        std::cout << "Listening" << std::endl;
         connection.listen();
+    }
+    else if (tcp_mode == true){
+        TCPConnection connection(host,port);
+        std::cout << "Listening" << std::endl;
+        connection.listen_tcp();
     }
     std::string input_string;
     std::getline(std::cin, input_string);
