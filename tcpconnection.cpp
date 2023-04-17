@@ -16,7 +16,7 @@
 
 std::mutex mtx;
 
-#define BUFFER_SIZE 1025
+#define BUFFER_SIZE 1024
 struct thread_args {
     int client_socket;
     std::vector<int>* client_sockets_ptr;
@@ -45,9 +45,12 @@ TCPConnection::TCPConnection(const char* host, int port){
         exit(1);
     }
 }
+TCPConnection::~TCPConnection(){
+    close(this->welcome_socket);
+}
 
 void TCPConnection::listen_tcp(){
-    int max_waiting_connections = 1;
+    int max_waiting_connections = 2;
     if (listen(this->welcome_socket, max_waiting_connections) < 0)
     {
         perror("ERROR: listen");
@@ -80,7 +83,6 @@ void TCPConnection::listen_tcp(){
         pthread_create(&thread, NULL, handle_connection, (void*)args);
         threads.push_back(thread);
     }
-    std::cout << "Closing server" << std::endl;
     for (auto &thread : threads) {
         pthread_join(thread, NULL);
     }
@@ -96,46 +98,13 @@ void *handle_connection(void *arg){
     delete args;
     int send_l;
     bzero(buffer,BUFFER_SIZE);
+    std::string line;
+    std::string full_message;
+    bool hello_flag = false;
+    bool exiting = false;
     std::cout << "Waiting for HELLO" << std::endl;
-    send_l = recv(client_socket, buffer, BUFFER_SIZE-1, 0);
-    if (send_l <= 0){
-        perror("recvfrom:");
-        mtx.lock();
-        for (auto socket = client_sockets_ptr->begin(); socket != client_sockets_ptr->end(); socket++) {
-            if (*socket == client_socket) {
-                client_sockets_ptr->erase(socket);
-                break;
-            }
-        }
-        mtx.unlock();
-        std::cout << client_socket << std::endl;
-        close(client_socket);
-        pthread_exit(NULL);
-    }
-    
-    std::string message(buffer);
-    if (message == "HELLO\n"){
-        std::cout << "Received HELLO" << std::endl;
-        send(client_socket, "HELLO\n", 6, 0);
-    }
-    else{
-        std::cout << "Invalid message" << std::endl;
-        mtx.lock();
-        for (auto socket = client_sockets_ptr->begin(); socket != client_sockets_ptr->end(); socket++) {
-            if (*socket == client_socket) {
-                client_sockets_ptr->erase(socket);
-                break;
-            }
-        }
-        mtx.unlock();
-        send(client_socket, "BYE\n",4, 0);
-        close(client_socket);
-        pthread_exit(NULL);
-    }
-    bzero(buffer,BUFFER_SIZE);
-    while (1){
-        send_l = recv(client_socket, buffer, BUFFER_SIZE, 0);
-        std::cout << "Received message: " << buffer;
+    while(!exiting){
+        send_l = recv(client_socket, buffer, BUFFER_SIZE-1, 0);
         if (send_l <= 0){
             perror("recvfrom:");
             mtx.lock();
@@ -149,39 +118,74 @@ void *handle_connection(void *arg){
             close(client_socket);
             pthread_exit(NULL);
         }
-        std::string message(buffer);
-        if (message == "BYE\n"){
-            break;
+        std::string buffer_s(buffer);
+        full_message = full_message + buffer_s;
+        bzero(buffer,BUFFER_SIZE);
+        if (buffer_s.find('\n') == std::string::npos){
+            continue;
         }
-        size_t pos = message.find("SOLVE ");
-        if (pos == std::string::npos or pos != 0){
-            std::cout << "Invalid message" << std::endl;
-            break;
-        }
-        message.erase(0,6);
-        message.pop_back();
-        Parser parser(message);
-        try{
-            parser.parse();
-        }
-        catch (...){
-            std::cout << "Invalid message" << std::endl;
-            break;
-        }
-        message = "RESULT " + std::to_string(parser.result) + "\n";
-        if (send(client_socket, message.c_str(), message.length(), 0) < 0){
-            perror("ERROR: sendto:");
-            mtx.lock();
-            for (auto socket = client_sockets_ptr->begin(); socket != client_sockets_ptr->end(); socket++) {
-                if (*socket == client_socket) {
-                    client_sockets_ptr->erase(socket);
+        
+        while (!full_message.empty() and full_message.find('\n') != std::string::npos){
+            line = full_message.substr(0, full_message.find('\n'));
+            full_message = full_message.substr(full_message.find('\n')+1);
+            std::cout <<"Message "<< line << std::endl;
+            if (line == "HELLO"){
+                if (hello_flag == true){
+                    exiting = true;
                     break;
                 }
+                hello_flag = true;
+                send(client_socket, "HELLO\n", 6, 0);
+
             }
-            mtx.unlock();
-            close(client_socket);
-            pthread_exit(NULL);
+            else if(hello_flag == true){
+                if (line == "BYE"){
+                    exiting = true;
+                    break;
+                }
+                else{
+                    size_t pos = line.find("SOLVE ");
+                    if (pos == std::string::npos or pos != 0){
+                        std::cout << "Invalid message" << std::endl;
+                        exiting = true;
+                        break;
+                    }
+                    line.erase(0,6);
+                    Parser parser(line);
+                    try{
+                        parser.parse();
+                    }
+                    catch (...){
+                        std::cout << "Invalid message" << std::endl;
+                        exiting = true;
+                        break;
+                    }
+                    line = "RESULT " + std::to_string(parser.result) + "\n";
+                    if (send(client_socket, line.c_str(), line.length(), 0) < 0){
+                        perror("ERROR: sendto:");
+                        mtx.lock();
+                        for (auto socket = client_sockets_ptr->begin(); socket != client_sockets_ptr->end(); socket++) {
+                            if (*socket == client_socket) {
+                                client_sockets_ptr->erase(socket);
+                                exiting = true;
+                                break;
+                            }
+                        }
+                        mtx.unlock();
+                        close(client_socket);
+                        pthread_exit(NULL);
+                    }
+                    bzero(buffer,BUFFER_SIZE);
+                }
+            }
+                
+            else{
+                std::cout << "Invalid message" << std::endl;
+                exiting = true;
+                break;
+            }
         }
+        line.clear();
         bzero(buffer,BUFFER_SIZE);
     }
     

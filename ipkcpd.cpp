@@ -85,11 +85,13 @@ int main(int argc, char *argv[]){
         UDPConnection connection((char*)host,port);
         std::cout << "Listening" << std::endl;
         connection.listen();
+        connection.~UDPConnection();
     }
     else if (tcp_mode == true){
         TCPConnection connection(host,port);
         std::cout << "Listening" << std::endl;
         connection.listen_tcp();
+        connection.~TCPConnection();
     }
  
     return 0;

@@ -17,11 +17,9 @@ UDPConnection::UDPConnection(char* host, int port){
 		perror("ERROR: socket");
 		exit(EXIT_FAILURE);
 	}
-    /* potlaceni defaultniho chovani rezervace portu ukonceni aplikace */ 
     int optval = 1;
     setsockopt(this->server_socket, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval , sizeof(int));
 
-    /* adresa serveru, potrebuje pro prirazeni pozadovaneho portu */
     bzero((char *) &(this->server_address), sizeof(this->server_address));
     this->server_address.sin_family = AF_INET;
     if(inet_aton(host, &(this->server_address.sin_addr)) == 0){
@@ -50,18 +48,22 @@ void UDPConnection::listen(){
         this->send_l = recvfrom(this->server_socket, this->buffer, 299, 0, (struct sockaddr *) &(this->client_address), &(this->clientlen));
         if (this->send_l < 0) 
             perror("ERROR: recvfrom:");
+        try{
+        if (this->buffer[0] != '\0'){
+            throw -1;
+        }
         std::string message((this->buffer)+2);
+        message = message.substr(0, this->buffer[1]);
         std::cout << "Recieved: " << message << std::endl;
         Parser parser(message);
-        if (sigint_flag)
-            break;
-        try{
-            parser.parse();
+        if (sigint_flag) break;
+        
+        parser.parse();
         
         message.clear();
         message = std::to_string(parser.result);
         bzero(this->buffer,300);
-        this->buffer[0] = '1';
+        this->buffer[0] = '\1';
         this->buffer[1] = '\0';
         this->buffer[2]=(char)message.length();
         memcpy((this->buffer) + 3, message.c_str(), message.length());
@@ -69,12 +71,11 @@ void UDPConnection::listen(){
         catch(...){
             std::cout << "Error with sent message" << std::endl;
             bzero(this->buffer,300);
-            this->buffer[0] = '1';
+            this->buffer[0] = '\1';
             this->buffer[1] = '\1';
             this->buffer[2] = 23;
             memcpy((this->buffer) + 3, "Error with sent message", 23);
         }
-        std::cout << "Sending: " << strlen(buffer+3)+3 << std::endl;
         this->recieve_l = sendto(this->server_socket, this->buffer, strlen(buffer+3)+3, 0, (struct sockaddr *) &(this->client_address), this->clientlen);
         if (this->recieve_l < 0) 
             perror("ERROR: sendto:");
