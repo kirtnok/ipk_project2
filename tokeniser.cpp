@@ -26,8 +26,8 @@ Token Tokeniser::get_token(int &i){
 
     }
     else{
-        std::cout << "Error" << std::endl;
-        throw 1;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     i++;
     return token;

@@ -10,53 +10,55 @@ Parser::Parser(std::string input): tokeniser(input){
 void Parser::parse(){
     Token token = this->tokeniser.get_token(idx);
     std::stack<Token> stack;
+    std::cout << "Solving: " << input << std::endl;
     if (!token.left_brace.has_value()) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     stack.push(token);
     token = this->tokeniser.get_token(idx);
     if (!token.opera.has_value()) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     stack.push(token);
     token = this->tokeniser.get_token(idx);
     if (!token.space.has_value()) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     token = this->tokeniser.get_token(idx);
     if (!expr(token,stack)) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     token = this->tokeniser.get_token(idx);
     if (!token.space.has_value()) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     token = this->tokeniser.get_token(idx);
     if (!expr(token,stack)) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     token = this->tokeniser.get_token(idx);
     if (!end(token,stack)) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     if (!token.right_brace.has_value()) {
-        printf("SYNTAX ERROR");
-        return;
-    }
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
+    }   
     this->execute(stack);
     if (idx != (int)input.length()) {
-        printf("SYNTAX ERROR");
-        return;
+        std::cout << idx << input.length() << std::endl;
+        std::cout << "Wrong query syntax" << std::endl;
+        throw -1;
     }
     if (result < 0) {
-        throw 1;
+        throw -1;
     }
     std::cout << "Result: " << this->result << std::endl;
 }
