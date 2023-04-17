@@ -1,3 +1,8 @@
+/*tokeniser.cpp
+* auhor: Jakub Kontrik
+* login: xkontr02
+* brief: tokeniser for ipk parser
+*/
 #include "tokeniser.h"
 #include <string>
 #include <iostream>
@@ -5,7 +10,7 @@
 Tokeniser::Tokeniser(std::string input){
     this->input = input;
 }
-
+// get token from the input string
 Token Tokeniser::get_token(int &i){
     Token token;
     if (std::isspace(input[i])) {
@@ -32,6 +37,7 @@ Token Tokeniser::get_token(int &i){
     i++;
     return token;
 };
+// load sequence of digits into a number from the input string
 int Tokeniser::load_number(int &i){
         int number = 0;
         while (std::isdigit(input[i])){

@@ -1,3 +1,8 @@
+/*ipkcpd.cpp
+* auhor: Jakub Kontrik
+* login: xkontr02
+* brief: server for ipk calculator
+*/
 #include <iostream>
 #include <math.h>
 #include <string>
@@ -34,6 +39,7 @@ int main(int argc, char *argv[]){
     char *p;
     bool tcp_mode = false;
     bool udp_mode = false;
+    //set up signal handler
     struct sigaction sigint_handler;
     sigint_handler.sa_handler = sigint_handle;
     sigemptyset(&sigint_handler.sa_mask);
@@ -82,16 +88,16 @@ int main(int argc, char *argv[]){
         }
     }
     if (udp_mode == true){
-        UDPConnection connection((char*)host,port);
+        UDPConnection connection(host,port);
         std::cout << "Listening" << std::endl;
         connection.listen();
-        connection.~UDPConnection();
+        close(connection.server_socket);
     }
     else if (tcp_mode == true){
         TCPConnection connection(host,port);
         std::cout << "Listening" << std::endl;
         connection.listen_tcp();
-        connection.~TCPConnection();
+        close(connection.welcome_socket);
     }
  
     return 0;

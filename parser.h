@@ -1,8 +1,13 @@
+/*parser.h
+* auhor: Jakub Kontrik
+* login: xkontr02
+*/
 #ifndef PARSER_H
 #define PARSER_H
 #include "tokeniser.h"
 #include <string>
 #include <stack>
+// class for parsing queries and executing them
 class Parser{
     public:
     std::string input;

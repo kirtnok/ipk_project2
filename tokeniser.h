@@ -1,8 +1,12 @@
+/*tokeniser.h
+* auhor: Jakub Kontrik
+* login: xkontr02
+*/
 #ifndef TOKENISER_H
 #define TOKENISER_H
 #include <optional>
 #include <string>
-
+// class with types of tokens
 class Token{
     public:
     std::optional<int>number;
@@ -11,7 +15,7 @@ class Token{
     std::optional<char>right_brace;
     std::optional<char>space;
 };
-
+// class for tokenising input string
 class Tokeniser{
     public:
     Tokeniser(std::string input);
@@ -19,7 +23,6 @@ class Tokeniser{
     private:
     std::string input;
     int load_number(int &i);
-
 };
 
 #endif // TOKENISER_H
