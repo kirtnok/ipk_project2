@@ -71,10 +71,11 @@ void UDPConnection::listen(){
             bzero(this->buffer,300);
             this->buffer[0] = '1';
             this->buffer[1] = '\1';
-            this->buffer[3] = 23;
+            this->buffer[2] = 23;
             memcpy((this->buffer) + 3, "Error with sent message", 23);
         }
-        this->recieve_l = sendto(this->server_socket, this->buffer, 300, 0, (struct sockaddr *) &(this->client_address), this->clientlen);
+        std::cout << "Sending: " << strlen(buffer+3)+3 << std::endl;
+        this->recieve_l = sendto(this->server_socket, this->buffer, strlen(buffer+3)+3, 0, (struct sockaddr *) &(this->client_address), this->clientlen);
         if (this->recieve_l < 0) 
             perror("ERROR: sendto:");
     }
