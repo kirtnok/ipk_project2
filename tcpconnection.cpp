@@ -75,7 +75,7 @@ void TCPConnection::listen_tcp(){
         // if SIGINT is caught,send to all clients BYE and close all connections
         if (sigint_flag){
             std::cout << "Closing server" << std::endl;
-            for (int i = 0; i < this->client_sockets.size(); i++){
+            for (int i = 0; i < (int)this->client_sockets.size(); i++){
                 send(this->client_sockets[i], "BYE\n", 4, 0);
                 shutdown(this->client_sockets[i], SHUT_RDWR);
                 close(this->client_sockets[i]);

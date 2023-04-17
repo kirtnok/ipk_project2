@@ -9,6 +9,12 @@ Server is not terminating connection when tcp client is just connected without a
 
 ## Changes
 
+### Commit: Fix makefile
+Date:   Apr 17 2023
+    
+    - fixed makefile flags
+    - fixed compilation warning
+
 ### Commit: Add comments, refactorize
 Date:   Apr 17 2023
     
@@ -82,7 +88,3 @@ Date:   Apr 15 2023
     - added tokeniser class for loading tokens from input 
     - added parser class for checking query syntax
 
-## Bibliography
-[C++ Documentation](https://learn.microsoft.com/en-us/cpp/cpp/?view=msvc-170)  
-[STUBS](https://git.fit.vutbr.cz/NESFIT/IPK-Projekty/src/branch/master/Stubs)
-[Lectures](https://moodle.vut.cz/mod/folder/view.php?id=289124)

@@ -18,7 +18,7 @@ $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 %.o: %.cpp %.d %.h
-	$(CXX) -MT $@ -MMD -MP -MF $*.d $(CFLAGS) -c $(OUTPUT_OPTION) $<
+	$(CXX) -MT $@ -MMD -MP -MF $*.d $(CXXFLAGS) -c $(OUTPUT_OPTION) $<
 $(DEPS):
 include $(wildcard $(DEPS))
 
