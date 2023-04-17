@@ -10,7 +10,13 @@
 #include "tokeniser.h"
 #include "parser.h"
 #include "udpconnection.h"
+#include <signal.h>
+bool sigint_flag = false;
 
+void sigint_handle(int signum){
+    (void)signum;
+    sigint_flag = true;
+}
 
 void print_help(){
     std::cout << "Usage: ipkcpd -h <host> -p <port> -m <mode> [--help]" << std::endl;
@@ -28,6 +34,11 @@ int main(int argc, char *argv[]){
     char *p;
     bool tcp_mode = false;
     bool udp_mode = false;
+    struct sigaction sigint_handler;
+    sigint_handler.sa_handler = sigint_handle;
+    sigemptyset(&sigint_handler.sa_mask);
+    sigint_handler.sa_flags = 0;
+    sigaction(SIGINT, &sigint_handler, NULL);
     if(argc == 2 && !strcmp(argv[1], "--help")){
         print_help();
         exit(0);
@@ -80,10 +91,6 @@ int main(int argc, char *argv[]){
         std::cout << "Listening" << std::endl;
         connection.listen_tcp();
     }
-    std::string input_string;
-    std::getline(std::cin, input_string);
-    Parser parser(input_string);
-    parser.parse();
  
     return 0;
 }

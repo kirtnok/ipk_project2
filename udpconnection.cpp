@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #include "parser.h"
-
+extern bool sigint_flag;
 
 UDPConnection::UDPConnection(char* host, int port){
 	if ((this->server_socket = socket(AF_INET, SOCK_DGRAM, 0)) <= 0)
@@ -47,27 +47,27 @@ void UDPConnection::listen(){
     while(1){
         bzero(this->buffer,300);
         this->clientlen = sizeof(this->client_address);
-        this->send_l = recvfrom(this->server_socket, this->buffer, 300, 0, (struct sockaddr *) &(this->client_address), &(this->clientlen));
+        this->send_l = recvfrom(this->server_socket, this->buffer, 299, 0, (struct sockaddr *) &(this->client_address), &(this->clientlen));
         if (this->send_l < 0) 
             perror("ERROR: recvfrom:");
-        this->buffer[299] = '\0';
         std::string message((this->buffer)+2);
-        std::cout << message << std::endl;
+        std::cout << "Recieved: " << message << std::endl;
         Parser parser(message);
+        if (sigint_flag)
+            break;
         try{
             parser.parse();
         
         message.clear();
         message = std::to_string(parser.result);
-
         bzero(this->buffer,300);
         this->buffer[0] = '1';
         this->buffer[1] = '\0';
-        this->buffer[3]=(char)message.length();
+        this->buffer[2]=(char)message.length();
         memcpy((this->buffer) + 3, message.c_str(), message.length());
-        std::cout << (this->buffer) + 3 << std::endl;
         }
         catch(...){
+            std::cout << "Error with sent message" << std::endl;
             bzero(this->buffer,300);
             this->buffer[0] = '1';
             this->buffer[1] = '\1';
